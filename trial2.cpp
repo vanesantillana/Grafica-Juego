@@ -12,9 +12,10 @@ using namespace std;
 int score = 0;
 int j = 0;
 float dist=30.0f;
-//bool movingUp = false;
+bool movingUp = false;
 float rotspeed = 10.0f;
-float yLocation = 0.75f;	
+float yLocation = 0.75f;
+float yperson = 0.0f;	
 float yRotationAngle = 0.0f;	
 int total = 70;			
 int arr[1000];
@@ -86,16 +87,59 @@ glLoadIdentity();
 
 }
 
+void drawPersonaje(){
+
+    glColor3f(1.0f, 1.0f, 1.0f);	
+
+// Body
+
+    glTranslatef(0.0f, yperson, 0.0f);
+    glutSolidSphere(0.1f, 20, 20);
+    //glRotatef(yRotationAngle, 0.0f, 1.0f, 0.0f);
+
+// Head
+    glTranslatef(0.0f, 0.1f, 0.0f);
+    glutSolidSphere(0.05f, 20, 20);
+/*
+// Eyes
+    glPushMatrix();
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glTranslatef(0.05f, 0.10f, 0.18f);
+    glutSolidSphere(0.05f, 10, 10);
+    glTranslatef(-0.1f, 0.0f, 0.0f);
+    glutSolidSphere(0.05f, 10, 10);
+    glPopMatrix();
+
+// Nose
+    glColor3f(1.0f, 0.5f, 0.5f);
+    glRotatef(0.0f, 1.0f, 0.0f, 0.0f);
+    glutSolidCone(0.08f, 0.85f, 10, 2);
+
+*/
+    if (movingUp)		// If we are moving up
+	yperson -= 0.0005f;	// Move up along our yperson
+    else			// Otherwise
+	yperson += 0.0005f;	// Move down along our yperson
+
+    if (yperson < 0.5f)	
+	movingUp = false;	
+    else if (yperson > 1.5f)	
+	movingUp = true;	
+
+}
+
 void runner(){
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glTranslatef(x, 2.2f, z + ((total) * dist)-3.0); //dist camara
 	//cout<<z<<" "<<z + ((total) * 30.0)-10.0<<endl;
-	glRotatef(yRotationAngle*rotspeed, 1.0f, 0.0f, 0.0f);
+	drawPersonaje();
+    /*
+    glRotatef(yRotationAngle*rotspeed, 1.0f, 0.0f, 0.0f);
 	glutWireSphere(0.1f, 20, 20);
+    */
 }
 
-void drawSnowMan()
-{
+void drawSnowMan(){
 
     glColor3f(1.0f, 1.0f, 1.0f);	
 
@@ -122,8 +166,8 @@ void drawSnowMan()
     glColor3f(1.0f, 0.5f, 0.5f);
     glRotatef(0.0f, 1.0f, 0.0f, 0.0f);
     glutSolidCone(0.08f, 0.85f, 10, 2);
-
 /*
+
     if (movingUp)		// If we are moving up
 	yLocation -= 0.0005f;	// Move up along our yLocation
     else			// Otherwise
@@ -133,11 +177,11 @@ void drawSnowMan()
 	movingUp = false;	
     else if (yLocation > 1.5f)	
 	movingUp = true;	
-*/
+
     yRotationAngle += 0.01f;	
     if (yRotationAngle > 360.0f)	
 	yRotationAngle -= 360.0f;	
-
+*/
 
 }
 

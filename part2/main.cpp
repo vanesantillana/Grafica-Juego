@@ -61,16 +61,16 @@ void glPaint(void) {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0);//coordenadas de textura
-	glVertex3d(8, -2, 0);
+	glVertex3d(-16, -12, 0);
 
 	glTexCoord2f(0.0, 1.0f);
-	glVertex3d(8, 2, 0);
+	glVertex3d(-16, 12, 0);
 
 	glTexCoord2f(1.0, 1.0f);
-	glVertex3d(16, 2, 0);
+	glVertex3d(16, 12, 0);
 
 	glTexCoord2f(1.0, 0.0);
-	glVertex3d(16, -2, 0);
+	glVertex3d(16, -12, 0);
 	glEnd();
 
 
@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
 	sprites = TextureManager::Inst()->LoadTexture("ss.png", GL_BGRA_EXT, GL_RGBA);
 	//GL_RGBA : en caso de una textura con transparencia sino GL_RGB
 	//GL_BGRA_EXT o GL_BGR_EXT : utilizar en caso de inversion de colores sino GL_RGBA o GL_RGB
-	texture = TextureManager::Inst()->LoadTexture("background.png", GL_BGR_EXT, GL_RGB);
+	texture = TextureManager::Inst()->LoadTexture("mountain.jpeg", GL_BGR_EXT, GL_RGB);
 	cout << texture << endl;
 	glutDisplayFunc(glPaint);
 	glutReshapeFunc(&window_redraw);
