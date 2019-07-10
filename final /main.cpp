@@ -36,7 +36,7 @@ GLint wood;
 GLint brick;
 GLint roof;
 GLint grass;
-GLint sprites;
+GLint sprites, segurity;
 
 //---------variables de Sprite -----------//
 int times = 0;
@@ -56,7 +56,13 @@ bool echado = false; //si apreta echado cambia
 bool saltar = false;
 double tam_salto = 0.5;
 double i_salto=0;
-
+// -------- variables para el escudo --------//
+bool escudo = false;
+double sizea = 0.25, sizeb = 0.2;
+double cont_escudo = 0;
+double max_escudo = 2; //dura 2 veces mi escudo pero se vuelve mas pequenio
+double uso_escudos = 0;
+double total_escudos = 3; // solo puedo usar 3 escudos en total
 //ventana tamaño
 void changeSize(int w, int h)
 {
@@ -98,6 +104,33 @@ void runner()
     }
     saltar = false;
   }
+
+  if(escudo && cont_escudo<max_escudo){
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+	  glEnable(GL_BLEND);//utilizar transparencia
+    glPushMatrix();
+      glTranslatef(x, 2.1f+y +i_salto, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, segurity);
+      glBegin(GL_QUADS);
+      glTexCoord2f(0,0);//arr izq
+      glVertex3f(-sizea, -sizeb -0.1, -0.1);
+      glTexCoord2f(0, 1); //bajo izq
+      glVertex3f(-sizea, sizeb, -0.1);
+      glTexCoord2f(1, 1); //bajo der
+      glVertex3f(sizea, sizeb, -0.1);
+      glTexCoord2f(1,0); //arr der
+      glVertex3f(sizea, -sizeb -0.1, -0.1);
+      glEnd();
+    glPopMatrix();
+  }
+  else{
+    escudo = false;
+    cont_escudo =0;
+    sizea = 0.25;
+    sizeb = 0.2;
+  }
+
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
 	glEnable(GL_BLEND);//utilizar transparencia
 	times = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
@@ -113,14 +146,15 @@ void runner()
 	
 	if (i == 3) i = 0;
 
+  
   glPushMatrix();
     glTranslatef(x, 2.1f+y +i_salto, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, sprites);
     glBegin(GL_QUADS);
-    glTexCoord2f(sprx*(i + 0), p_pos_a);//arr izq
+    glTexCoord2f(sprx*(i + 0.1), p_pos_a);//arr izq
     glVertex3f(-0.4, -0.30, 0);
-    glTexCoord2f(sprx*(i + 0),p_pos_b); //bajo izq
+    glTexCoord2f(sprx*(i + 0.1),p_pos_b); //bajo izq
     glVertex3f(-0.4, 0.30, 0);
     glTexCoord2f(0.08+sprx*i, p_pos_b); //bajo der
     glVertex3f(0.4, 0.30, 0);
@@ -244,9 +278,19 @@ void renderScene(void)
     //Collision logic
     if (z < p + 1.0 && z > p - 1.0) {
       int a = (rand() % 3) - 1;
-	  if (x != 2.0f * arr[num]) {
-	      exit(0);
-	  }
+      if (x != 2.0f * arr[num]) {
+        if(escudo && cont_escudo<max_escudo){
+          cont_escudo +=1;
+          sizea= sizea/1.5;
+          sizeb= sizeb/1.5;
+          cout<<"Redusco escudo "<<cont_escudo<<endl;
+          if(cont_escudo==2)
+            uso_escudos+=1;
+        }
+        else{
+          exit(0);
+        }
+      }
 	    rotspeed=rotspeed+0.25f;
 	    score = score + 1;
 	    num = num - 1;
@@ -383,6 +427,13 @@ void processKeys(unsigned char key, int x, int y) {
     saltar = true;
     echado = false;
   }
+  else if(key == 'e'){
+    uso_escudos+=1;
+    if(uso_escudos < total_escudos*2)
+      escudo = !escudo;
+    else
+      escudo = false;
+  }
 }
 
 void pressKey(int key, int xx, int yy)
@@ -422,6 +473,7 @@ int main(int argc, char **argv)
     glutCreateWindow("SnowRun");
     //penguin
     sprites = TextureManager::Inst()->LoadTexture("texturas/penguin.png", GL_BGRA_EXT, GL_RGBA);
+    segurity = TextureManager::Inst()->LoadTexture("texturas/escudo.png", GL_BGRA_EXT, GL_RGBA);
     pista = TextureManager::Inst()->LoadTexture("pista.jpg", GL_BGR_EXT, GL_RGB);
     pared = TextureManager::Inst()->LoadTexture("pared.jpeg", GL_BGR_EXT, GL_RGB);
     sky = TextureManager::Inst()->LoadTexture("cielo.jpg", GL_BGR_EXT, GL_RGB);
