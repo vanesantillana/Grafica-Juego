@@ -152,9 +152,9 @@ void runner()
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, sprites);
     glBegin(GL_QUADS);
-    glTexCoord2f(sprx*(i + 0.1), p_pos_a);//arr izq
+    glTexCoord2f(sprx*(i), p_pos_a);//arr izq
     glVertex3f(-0.4, -0.30, 0);
-    glTexCoord2f(sprx*(i + 0.1),p_pos_b); //bajo izq
+    glTexCoord2f(sprx*(i),p_pos_b); //bajo izq
     glVertex3f(-0.4, 0.30, 0);
     glTexCoord2f(0.08+sprx*i, p_pos_b); //bajo der
     glVertex3f(0.4, 0.30, 0);
@@ -455,6 +455,7 @@ void pressKey(int key, int xx, int yy)
 	       break;
       case GLUT_KEY_DOWN:
          echado = true;
+         cout<<"Echado"<<endl;
          break;
 	break;
     }
