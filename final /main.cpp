@@ -84,11 +84,11 @@ void *background_sound(void *ptr)
 string scores="SCORE: ";
 void drawScore(){
   glPushMatrix();
+  	glColor3f( 0.0f, 0.0f, 0.0f);
   glTranslatef(0,2, z + ((total) * dist)- 10.);
   stringstream ss;
   ss<<"0";
   glRasterPos2i(0, 2);
-	//glColor3f( 0.0f, 0.0f, 1.0f);
 	glDisable(GL_TEXTURE);
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < scores.size(); ++i)
@@ -130,6 +130,7 @@ void drawTime(){
 
 void background()
 {
+  glColor3f( 1.0f, 1.0f, 1.0f);
   glPushMatrix();
   glTranslatef(0, 0, z + ((total) * dist)- 90);
 	//glTranslatef(0.0f, -10.0f, -60);
@@ -147,6 +148,25 @@ void background()
 	glEnd();
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
+
+  //-----------------nieve  
+  glPushMatrix();
+    glTranslatef(x + i, y + i, z + ((total) * dist)- 3.0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, snow);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 0.0);//coordenadas de textura
+    glVertex3d(-2, -5, 0); //dl
+    glTexCoord2f(0.0, 8.0f); //ul
+    glVertex3d(-2, 5, 0);
+    glTexCoord2f(8.0,8.0f); //ur
+    glVertex3d(5, 2, 0);
+    glTexCoord2f(8.0, 0.0); //dr
+    glVertex3d(5, -2, 0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+
 }
 
 
@@ -249,6 +269,9 @@ void runner()
     glVertex3f(0.4, -0.30, 0);
     glEnd();
   glPopMatrix();
+
+
+  
   /*
   glPushMatrix();
 	GLUquadric* sphere = gluNewQuadric();
@@ -601,7 +624,7 @@ int main(int argc, char **argv)
     //penguin
     sprites = TextureManager::Inst()->LoadTexture("texturas/penguin.png", GL_BGRA_EXT, GL_RGBA);
     segurity = TextureManager::Inst()->LoadTexture("texturas/escudo.png", GL_BGRA_EXT, GL_RGBA);
-    //snow = TextureManager::Inst()->LoadTexture("texturas/snow.gif", GL_BGRA, GL_RGBA);
+    snow = TextureManager::Inst()->LoadTexture("texturas/snow.png", GL_BGRA_EXT, GL_RGBA);
     
     pista = TextureManager::Inst()->LoadTexture("pista.jpg", GL_BGR_EXT, GL_RGB);
     pared = TextureManager::Inst()->LoadTexture("pared.jpeg", GL_BGR_EXT, GL_RGB);
