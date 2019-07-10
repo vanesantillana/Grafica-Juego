@@ -26,7 +26,6 @@ float p = -21.0f;	//26-distance of running object
 int num = total - 1;
 float deltaMove = 0;
 int randomn;
-bool salto=false;
 int alto = 0.1;
 
 //-------variables fondo -------------//
@@ -52,6 +51,11 @@ double penguin_p_b = 0.6;
 double penguin_e_a = 0.0; // echado
 double penguin_e_b = 0.1;
 bool echado = false; //si apreta echado cambia
+
+//---------variables para saltar ----------//
+bool saltar = false;
+double tam_salto = 0.5;
+double i_salto=0;
 
 //ventana tamaño
 void changeSize(int w, int h)
@@ -85,6 +89,15 @@ void runner()
     sprx=0.08;
   }
 
+  if(saltar && i_salto<tam_salto){
+    i_salto += 0.1;
+  }
+  else{
+    if(i_salto>0.1){
+     i_salto -= 0.1;
+    }
+    saltar = false;
+  }
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
 	glEnable(GL_BLEND);//utilizar transparencia
 	times = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
@@ -101,22 +114,19 @@ void runner()
 	if (i == 3) i = 0;
 
   glPushMatrix();
-  glTranslatef(x, 2.1f+y, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
-  glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, sprites);
-	glBegin(GL_QUADS);
-	glTexCoord2f(sprx*(i + 0), p_pos_a);//arr izq
-	glVertex3f(-0.4, -0.30, 0);
-
-	glTexCoord2f(sprx*(i + 0),p_pos_b); //bajo izq
-	glVertex3f(-0.4, 0.30, 0);
-
-	glTexCoord2f(0.08+sprx*i, p_pos_b); //bajo der
-	glVertex3f(0.4, 0.30, 0);
-
-	glTexCoord2f(0.08+sprx*i, p_pos_a); //arr der
-	glVertex3f(0.4, -0.30, 0);
-	glEnd();
+    glTranslatef(x, 2.1f+y +i_salto, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, sprites);
+    glBegin(GL_QUADS);
+    glTexCoord2f(sprx*(i + 0), p_pos_a);//arr izq
+    glVertex3f(-0.4, -0.30, 0);
+    glTexCoord2f(sprx*(i + 0),p_pos_b); //bajo izq
+    glVertex3f(-0.4, 0.30, 0);
+    glTexCoord2f(0.08+sprx*i, p_pos_b); //bajo der
+    glVertex3f(0.4, 0.30, 0);
+    glTexCoord2f(0.08+sprx*i, p_pos_a); //arr der
+    glVertex3f(0.4, -0.30, 0);
+    glEnd();
   glPopMatrix();
   /*
   glPushMatrix();
@@ -365,6 +375,16 @@ void renderScene(void)
     glutSwapBuffers();
 }
 
+//-------funcion para reconocer letras del teclado -------------/
+void processKeys(unsigned char key, int x, int y) {
+  if (key == 27) // escape key 
+    exit(0);
+  else if (key==32){ // tecla espacio para saltar
+    saltar = true;
+    echado = false;
+  }
+}
+
 void pressKey(int key, int xx, int yy)
 {
 
@@ -380,9 +400,7 @@ void pressKey(int key, int xx, int yy)
 	       }
 	       break;
       case GLUT_KEY_UP:
-          y = y + alto;
          echado = false;
-         cout << "y " << y << endl;
 	       break;
       case GLUT_KEY_DOWN:
          echado = true;
@@ -418,6 +436,7 @@ int main(int argc, char **argv)
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
     glutIdleFunc(renderScene);
+    glutKeyboardFunc( processKeys );
     glutSpecialFunc(pressKey);
     //glutIgnoreKeyRepeat(1);
     glEnable(GL_DEPTH_TEST);
