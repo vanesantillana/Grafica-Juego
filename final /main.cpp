@@ -2,13 +2,16 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
+#include <sstream>
 #include <GL/glut.h>
 #include "TextureManager.h"
 //#include "text3d.h"
 #include<time.h>
 #include <iostream>
+#include <pthread.h>
 using namespace std;
 
+int timer=0;
 int score = 0;
 int j = 0;
 float dist=30.0f;
@@ -17,6 +20,7 @@ float rotspeed = 60.0f;
 float yLocation = 0.75f;	// Keep track of our position on the y axis.
 float yRotationAngle = 0.0f;	// The angle of rotation for our object
 int total = 70;			//number of snowmen rows
+int totalCoins = 30;
 int arr[1000];
 float lx = 0.0f, lz = -1.0f;	// actual vector representing the camera's direction
 float m = 0.0f;
@@ -36,7 +40,8 @@ GLint wood;
 GLint brick;
 GLint roof;
 GLint grass;
-GLint sprites, segurity;
+GLint sprites, segurity,snow;
+GLint coin;
 
 //---------variables de Sprite -----------//
 int times = 0;
@@ -56,6 +61,7 @@ bool echado = false; //si apreta echado cambia
 bool saltar = false;
 double tam_salto = 0.5;
 double i_salto=0;
+
 // -------- variables para el escudo --------//
 bool escudo = false;
 double sizea = 0.25, sizeb = 0.2;
@@ -63,6 +69,87 @@ double cont_escudo = 0;
 double max_escudo = 2; //dura 2 veces mi escudo pero se vuelve mas pequenio
 double uso_escudos = 0;
 double total_escudos = 3; // solo puedo usar 3 escudos en total
+//------------ coins -------//
+int arrcoin[30];
+float dist_coin=30.0f;
+
+pthread_t thread1;
+
+
+void *background_sound(void *ptr)
+{
+	system("canberra-gtk-play -f sonidos/theme.wav &");
+}
+
+string scores="SCORE: ";
+void drawScore(){
+  glPushMatrix();
+  glTranslatef(0,2, z + ((total) * dist)- 10.);
+  stringstream ss;
+  ss<<"0";
+  glRasterPos2i(0, 2);
+	//glColor3f( 0.0f, 0.0f, 1.0f);
+	glDisable(GL_TEXTURE);
+	glDisable(GL_TEXTURE_2D);
+	for (int i = 0; i < scores.size(); ++i)
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)scores[i]);
+
+  for (int i = 0; i < ss.str().size(); ++i)
+  		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)ss.str()[i]);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE);
+  glPopMatrix();
+}
+
+string tm="TIME: ";
+void drawTime(){
+  glPushMatrix();
+  glTranslatef(0,2, z + ((total) * dist)- 10.);
+	int t=timer/1000;
+	stringstream minute;
+	minute<<t/60;
+	stringstream second;
+	second<<t%60;
+	glRasterPos2i(2, 2);
+	glDisable(GL_TEXTURE);
+	glDisable(GL_TEXTURE_2D);
+	for (int i = 0; i < scores.size(); ++i)
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)tm[i]);
+	for (int i = 0; i < minute.str().size(); ++i)
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)minute.str()[i]);
+	glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)':');
+	if(t%60<10)
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)'0');
+	for (int i = 0; i < second.str().size(); ++i)
+		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)second.str()[i]);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE);
+  glPopMatrix();
+}
+
+void background()
+{
+  glPushMatrix();
+  glTranslatef(0, 0, z + ((total) * dist)- 90);
+	//glTranslatef(0.0f, -10.0f, -60);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, sky);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0);//coordenadas de textura
+	glVertex3d(-60, -60, 0); //dl
+	glTexCoord2f(0.0, 1.0f); //ul
+	glVertex3d(-60, 60, 0);
+	glTexCoord2f(1.0, 1.0f); //ur
+	glVertex3d(60, 60, 0);
+	glTexCoord2f(1.0, 0.0); //dr
+	glVertex3d(60, -60, 0);
+	glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
+
+
 //ventana tamaño
 void changeSize(int w, int h)
 {
@@ -137,13 +224,13 @@ void runner()
 	int dt = times -timebase;// delta time
 	timebase = times;
 	anim += dt;//duracion de la animacion entre dos cambios de Sprite
-	
+
 	if (anim / 1000.0 > 0.15)// si el tiempo de animacion dura mas 0.15s cambiamos de sprite
 	{
 		i++;
 		anim = 0.0;
 	}
-	
+
 	if (i == 3) i = 0;
 
   
@@ -178,6 +265,35 @@ void runner()
   //drawPenguin();
 }
 
+void drawCoins()
+{
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, coin);
+    glPushMatrix();
+      glTranslatef(0,1,0);
+      glBegin(GL_QUADS);
+      glTexCoord2f(0.0f, 0.0f);
+      glVertex3d(0.8, -1., 0);//abajo izquierda
+      glTexCoord2f(0.0f, 1.0f);
+      glVertex3d(0.8, 0.4, 0);//arriba izquierda
+      glTexCoord2f(1.0f, 1.0f);
+      glVertex3d(-0.8, 0.4, 0);//arriba derecha
+      glTexCoord2f(1.0f, 0.0f);
+      glVertex3d(-0.8, -1., 0);//abajo derecha
+      glEnd();
+    glPopMatrix();
+    glDisable(GL_TEXTURE_2D);
+}
+
+void random_coin(){
+  for (j = 0; j < totalCoins; j++) {
+    glPushMatrix();
+    glTranslatef(2.0, 0, j * dist);
+    drawCoins();
+    glPopMatrix();
+
+  }
+}
 
 void drawSnowMan()
 {
@@ -265,6 +381,7 @@ void drawshadow() // punto negro abajo de snowman
 
 void renderScene(void)
 {
+    timer = glutGet(GLUT_ELAPSED_TIME);
     glMatrixMode(GL_MODELVIEW);
     if (deltaMove)
 	     computePos(deltaMove);
@@ -278,6 +395,9 @@ void renderScene(void)
     //Collision logic
     if (z < p + 1.0 && z > p - 1.0) {
       int a = (rand() % 3) - 1;
+      cout<<"a"<<y+i_salto<<endl;
+      cout<<y<<endl;
+      cout<<i_salto<<endl ;
       if (x != 2.0f * arr[num]) {
         if(escudo && cont_escudo<max_escudo){
           cont_escudo +=1;
@@ -289,8 +409,12 @@ void renderScene(void)
         }
         else{
           exit(0);
+          pthread_exit(&thread1);
+          system("canberra-gtk-play -f sonidos/explosion.wav &");
+
         }
       }
+
 	    rotspeed=rotspeed+0.25f;
 	    score = score + 1;
 	    num = num - 1;
@@ -396,6 +520,7 @@ void renderScene(void)
     glDisable(GL_TEXTURE_2D);
 
 //*********************************************************************************************************
+    //random_coin();
 
     for (j = 0; j < total; j++) {
       srand(randomn+j);		//use j-1 or j+1 to change order of snowman
@@ -405,23 +530,24 @@ void renderScene(void)
 	    for (int i = -1; i < 2; i++) {	//should start from -1 to place snowmen at center
 	      glPushMatrix();
 	      if (arr[j] != i) {
-		    glTranslatef(i * 2.0, 0, j * dist);
+		      glTranslatef(i * 2.0, 0, j * dist);
 		    //drawshadow();
 	      //drawSnowMan();
-        drawTree();
+          drawTree();
 	      }
 	    glPopMatrix();
 	    }
-	//drawtree(x-3,0,z);
-	//drawtree(x+3,0,z);
     }
     runner();
+    drawScore();
+    drawTime();
+    background();
     glutSwapBuffers();
 }
 
 //-------funcion para reconocer letras del teclado -------------/
 void processKeys(unsigned char key, int x, int y) {
-  if (key == 27) // escape key 
+  if (key == 27) // escape key
     exit(0);
   else if (key==32){ // tecla espacio para saltar
     saltar = true;
@@ -469,22 +595,30 @@ int main(int argc, char **argv)
     // init GLUT and create window
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowPosition(250, 50);
+    glutInitWindowPosition(0, 0);
     glutInitWindowSize(1000, 700);
     glutCreateWindow("SnowRun");
     //penguin
     sprites = TextureManager::Inst()->LoadTexture("texturas/penguin.png", GL_BGRA_EXT, GL_RGBA);
     segurity = TextureManager::Inst()->LoadTexture("texturas/escudo.png", GL_BGRA_EXT, GL_RGBA);
+    //snow = TextureManager::Inst()->LoadTexture("texturas/snow.gif", GL_BGRA, GL_RGBA);
+    
     pista = TextureManager::Inst()->LoadTexture("pista.jpg", GL_BGR_EXT, GL_RGB);
     pared = TextureManager::Inst()->LoadTexture("pared.jpeg", GL_BGR_EXT, GL_RGB);
-    sky = TextureManager::Inst()->LoadTexture("cielo.jpg", GL_BGR_EXT, GL_RGB);
+    sky = TextureManager::Inst()->LoadTexture("texturas/montania.jpg", GL_BGR_EXT, GL_RGB);
     wood = TextureManager::Inst()->LoadTexture("madera.jpg", GL_BGR_EXT, GL_RGB);
     brick = TextureManager::Inst()->LoadTexture("ladrillo.jpg", GL_RGB, GL_RGB);
     roof = TextureManager::Inst()->LoadTexture("techo.jpg", GL_RGB, GL_RGB);
-    grass = TextureManager::Inst()->LoadTexture("texturas/hojas.jpg", GL_BGR_EXT, GL_RGB);
+    grass = TextureManager::Inst()->LoadTexture("texturas/hojasnieve.jpg", GL_BGR_EXT, GL_RGB);
+    coin = TextureManager::Inst()->LoadTexture("texturas/coin.png", GL_BGRA_EXT, GL_RGBA);
 
     srand(time(NULL));
 	  randomn = 2;// (rand() % 3) - 1;
+
+    int iret1;
+    const char *message1 = "Thread 1";
+    pthread_create( &thread1, NULL, background_sound, (void*) message1);
+
 
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
