@@ -248,9 +248,6 @@ void drawCoins()
 
 void drawSnowMan()
 {
-
-    glColor3f(1.0f, 1.0f, 1.0f);	//color of snowman
-
 // Draw Body
     glTranslatef(0.0f, yLocation, 0.0f);
     glutSolidSphere(0.75f, 20, 20);
@@ -273,6 +270,7 @@ void drawSnowMan()
     glColor3f(1.0f, 0.5f, 0.5f);
     glRotatef(0.0f, 1.0f, 0.0f, 0.0f);
     glutSolidCone(0.08f, 0.85f, 10, 2);
+		glColor3f(1.0f, 1, 1);
 
 }
 
@@ -346,9 +344,6 @@ void renderScene(void)
     //Collision logic
     if (z < p + 1.0 && z > p - 1.0) {
       int a = (rand() % 3) - 1;
-      cout<<"a"<<y+i_salto<<endl;
-      cout<<y<<endl;
-      cout<<i_salto<<endl ;
 	  if (x != 2.0f * arr[num] && !saltar) {
       pthread_exit(&thread1);
       system("canberra-gtk-play -f sonidos/explosion.wav &");
@@ -470,9 +465,14 @@ void renderScene(void)
 	      glPushMatrix();
 	      if (arr[j] != i) {
 		    glTranslatef(i * 2.0, 0, j * dist);
-		    //drawshadow();
-	      //drawSnowMan();
-          drawTree();
+					if(i==-1)
+          	drawTree();
+					if(i==0)
+						drawSnowMan();
+					if(i==1)
+						drawCoins();
+					/*if(arr[j]==0)
+						drawSnowMan();*/
 	      }
 	    glPopMatrix();
 	    }
