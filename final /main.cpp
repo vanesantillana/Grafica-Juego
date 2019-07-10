@@ -22,6 +22,8 @@ float yRotationAngle = 0.0f;	// The angle of rotation for our object
 int total = 70;			//number of snowmen rows
 int totalCoins = 30;
 int arr[1000];
+int valores[1000];
+
 float lx = 0.0f, lz = -1.0f;	// actual vector representing the camera's direction
 float m = 0.0f;
 float x = 0.0f, z = 0.0f;	// XZ position of the camera
@@ -59,7 +61,7 @@ bool echado = false; //si apreta echado cambia
 
 //---------variables para saltar ----------//
 bool saltar = false;
-double tam_salto = 0.5;
+double tam_salto = 0.6;
 double i_salto=0;
 
 // -------- variables para el escudo --------//
@@ -280,7 +282,7 @@ void runner()
 	glTranslatef(x, 2.1f+y, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
   gluSphere(sphere,0.1, 50,50);
   glPopMatrix();
-*/
+  */
 	//cout<<z<<" "<<z + ((total) * 30.0)-10.0<<endl;
 	//glRotatef(yRotationAngle*rotspeed, 1.0f, 0.0f, 0.0f);
   //glutWireSphere(0.1f, 20, 20);
@@ -307,28 +309,19 @@ void drawCoins()
     glDisable(GL_TEXTURE_2D);
 }
 
-void random_coin(){
-  for (j = 0; j < totalCoins; j++) {
-    glPushMatrix();
-    glTranslatef(2.0, 0, j * dist);
-    drawCoins();
-    glPopMatrix();
-
-  }
-}
 
 void drawSnowMan()
 {
-// Draw Body
+  // Draw Body
     glTranslatef(0.0f, yLocation, 0.0f);
     glutSolidSphere(0.75f, 20, 20);
     glRotatef(yRotationAngle, 0.0f, 1.0f, 0.0f);
 
-// Draw Head
+  // Draw Head
     glTranslatef(0.0f, 1.0f, 0.0f);
     glutSolidSphere(0.25f, 20, 20);
 
-// Draw Eyes
+  // Draw Eyes
     glPushMatrix();
     glColor3f(0.0f, 0.0f, 0.0f);
     glTranslatef(0.05f, 0.10f, 0.18f);
@@ -337,7 +330,7 @@ void drawSnowMan()
     glutSolidSphere(0.05f, 10, 10);
     glPopMatrix();
 
-// Draw Nose
+  // Draw Nose
     glColor3f(1.0f, 0.5f, 0.5f);
     glRotatef(0.0f, 1.0f, 0.0f, 0.0f);
     glutSolidCone(0.08f, 0.85f, 10, 2);
@@ -348,7 +341,7 @@ void drawSnowMan()
     else			// Otherwise
 	yLocation += 0.0005f;	// Move down along our yLocation
 
-    if (yLocation < 2.9f)
+    if (yLocation < 0.5f)
 	movingUp = false;
     else if (yLocation > 1.5f)
 	movingUp = true;
@@ -361,10 +354,11 @@ yRotationAngle -= 360.0f;
 
 
 void drawTree()
-{/*
+{
+  /*
   glColor3f(1.0f, 1.0f, 1.0f);	//color of snowman
   GLUquadric* tree = gluNewQuadric();
-// Draw Body
+  // Draw Body
   glTranslatef(0.0f, yLocation, 0.0f);
   gluCylinder(tree, 0.5f, 0.5f, 1.0f, 70 ,70); //gluCylinder(quadObj, base, top, height, slices, stacks);
 
@@ -372,30 +366,30 @@ void drawTree()
   // Draw Head
       glTranslatef(0.0f, 1.0f, 0.0f);
       glutSolidSphere(0.60f, 20, 20);
-*/
-glPushMatrix();
-glEnable(GL_TEXTURE_2D);
-GLUquadric* tree = gluNewQuadric();
-gluQuadricTexture (tree, true);
-glBindTexture(GL_TEXTURE_2D, wood);
-glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-//glBindTexture(GL_TEXTURE_2D, wood);
-gluCylinder(tree, 0.5f, 0.2f, 6.0f, 64 ,64);
-glPopMatrix();
-glDisable(GL_TEXTURE_2D);
+  */
+  glPushMatrix();
+  glEnable(GL_TEXTURE_2D);
+  GLUquadric* tree = gluNewQuadric();
+  gluQuadricTexture (tree, true);
+  glBindTexture(GL_TEXTURE_2D, wood);
+  glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+  //glBindTexture(GL_TEXTURE_2D, wood);
+  gluCylinder(tree, 0.5f, 0.2f, 6.0f, 64 ,64);
+  glPopMatrix();
+  glDisable(GL_TEXTURE_2D);
 
-glPushMatrix();
-glEnable(GL_TEXTURE_2D);
-GLUquadric* sphere = gluNewQuadric();
-gluQuadricTexture(sphere, true);
-glBindTexture(GL_TEXTURE_2D, grass);
-glTranslatef(0.0f, 6.4f, 0.0f);
-//glutSolidSphere(2.5, 64, 64);
-gluSphere(sphere,2.5, 50,50);
-glPopMatrix();
-glDisable(GL_TEXTURE_2D);
+  glPushMatrix();
+  glEnable(GL_TEXTURE_2D);
+  GLUquadric* sphere = gluNewQuadric();
+  gluQuadricTexture(sphere, true);
+  glBindTexture(GL_TEXTURE_2D, grass);
+  glTranslatef(0.0f, 6.4f, 0.0f);
+  //glutSolidSphere(2.5, 64, 64);
+  gluSphere(sphere,2.5, 50,50);
+  glPopMatrix();
+  glDisable(GL_TEXTURE_2D);
 
-//glFlush();
+  //glFlush();
 
 }
 
@@ -426,10 +420,13 @@ void renderScene(void)
     // Set the camera
     gluLookAt(x, 3.0f, z + ((total) * dist), x + lx, 2.0f, z - 1.0f, 0.0f, 1.0f, 0.0f);	//z+1500.0f means make camera move 1500f backward,y coordinates are for inclination
     //cout<<z<<endl;
-    //Collision logic
+
+    //Colision
     if (z < p + 1.0 && z > p - 1.0) {
       int a = (rand() % 3) - 1;
       if (x != 2.0f * arr[num]) {
+        cout<<"Chocaste con "<<valores[num]<<endl;
+
         if(escudo && cont_escudo<max_escudo){
           cont_escudo +=1;
           sizea= sizea/1.5;
@@ -438,7 +435,11 @@ void renderScene(void)
           if(cont_escudo==2)
             uso_escudos+=1;
         }
+        else if(saltar || echado){
+          cout<<"esta saltando"<<endl;
+        }
         else{
+          cout << "Your score:" << score << endl;
           exit(0);
           pthread_exit(&thread1);
           system("canberra-gtk-play -f sonidos/explosion.wav &");
@@ -461,12 +462,12 @@ void renderScene(void)
     }
 
 
-//**************************TEXTURAS*******************************************************
+  //**************************TEXTURAS*******************************************************
 
 
   //Textura de cielo falta
 
-//---------------------------------------Textura de la pista de hielo --------------------//
+  //---------------------------------------Textura de la pista de hielo --------------------//
     glColor3f(0.9f, 0.9f, 0.9f);
     glEnable(GL_TEXTURE_2D);
 	  glBindTexture(GL_TEXTURE_2D, pista);
@@ -483,7 +484,7 @@ void renderScene(void)
     glDisable(GL_TEXTURE_2D);
 
 
-//--------------------largo lado izquiero pared
+  //--------------------largo lado izquiero pared
 
     glColor3f(1.0f, 1.0f, 1.0f);
     glEnable(GL_TEXTURE_2D);
@@ -501,7 +502,7 @@ void renderScene(void)
 	  glDisable(GL_TEXTURE_2D);
 
 
-//-------------------Lado izquiero de la pantalla pared
+  //-------------------Lado izquiero de la pantalla pared
     glColor3f(1.0f, 1.0f, 1.0f);
     glEnable(GL_TEXTURE_2D);
 	  glBindTexture(GL_TEXTURE_2D, pared);
@@ -517,7 +518,7 @@ void renderScene(void)
     glEnd();
     glDisable(GL_TEXTURE_2D);
 
- //--------------------------largo lado derecho pared
+  //--------------------------largo lado derecho pared
     glColor3f(1.0f, 1.0f, 1.0f);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, pared);
@@ -533,7 +534,7 @@ void renderScene(void)
     glEnd();
     glDisable(GL_TEXTURE_2D);
 
-//--------------------------lado derecho de la pared
+  //--------------------------lado derecho de la pared
 
     glColor3f(1.0f, 1.0f, 1.0f);
     glEnable(GL_TEXTURE_2D);
@@ -550,7 +551,7 @@ void renderScene(void)
     glEnd();
     glDisable(GL_TEXTURE_2D);
 
-//*********************************************************************************************************
+    //*********************************************************************************************************
     //random_coin();
 
     for (j = 0; j < total; j++) {
@@ -561,19 +562,24 @@ void renderScene(void)
 	    for (int i = -1; i < 2; i++) {	//should start from -1 to place snowmen at center
 	      glPushMatrix();
 	      if (arr[j] != i) {
-
 		      glTranslatef(i * 2.0, 0, j * dist);
-					if(i==-1)
+          int val = (rand()%3)-1;
+					if(val==-1)
           	drawTree();
-					if(i==0)
+					if(val==0)
 						drawSnowMan();
-					if(i==1)
-						drawCoins();
+					if(val==1)
+						drawCoins(); //drawTree();
+
+          valores[j]=val;
+            //cout<<"val "<<val<<endl;
 					/*if(arr[j]==0)
 						drawSnowMan();*/
 	      }
+
 	    glPopMatrix();
 	    }
+      //cout<<"------------"<<endl;
     }
     runner();
     drawScore();
