@@ -16,7 +16,7 @@ int score = 0;
 int j = 0;
 float dist=30.0f;
 bool movingUp = false;
-float rotspeed = 60.0f;
+float rotspeed = 20.0f;
 float yLocation = 0.75f;	// Keep track of our position on the y axis.
 float yRotationAngle = 0.0f;	// The angle of rotation for our object
 int total = 70;			//number of snowmen rows
@@ -95,7 +95,6 @@ void drawScore(){
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < scores.size(); ++i)
 		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)scores[i]);
-
   for (int i = 0; i < ss.str().size(); ++i)
   		glutBitmapCharacter(GLUT_BITMAP_9_BY_15,(int)ss.str()[i]);
 
@@ -151,7 +150,7 @@ void background()
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
 
-  //-----------------nieve  
+  //-----------------nieve
   glPushMatrix();
     glTranslatef(x + i, y + i, z + ((total) * dist)- 3.0);
     glEnable(GL_TEXTURE_2D);
@@ -255,7 +254,7 @@ void runner()
 
 	if (i == 3) i = 0;
 
-  
+
   glPushMatrix();
     glTranslatef(x, 2.1f+y +i_salto, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
     glEnable(GL_TEXTURE_2D);
@@ -273,7 +272,7 @@ void runner()
   glPopMatrix();
 
 
-  
+
   /*
   glPushMatrix();
 	GLUquadric* sphere = gluNewQuadric();
@@ -336,6 +335,20 @@ void drawSnowMan()
     glRotatef(0.0f, 1.0f, 0.0f, 0.0f);
     glutSolidCone(0.08f, 0.85f, 10, 2);
 		glColor3f(1.0f, 1, 1);
+
+		if (movingUp)		// If we are moving up
+	yLocation -= 0.0005f;	// Move up along our yLocation
+    else			// Otherwise
+	yLocation += 0.0005f;	// Move down along our yLocation
+
+    if (yLocation < 0.5f)
+	movingUp = false;
+    else if (yLocation > 1.5f)
+	movingUp = true;
+
+    yRotationAngle += 0.01f;	// Increment our rotation value
+    if (yRotationAngle > 360.0f)
+yRotationAngle -= 360.0f;
 
 }
 
@@ -422,7 +435,7 @@ void renderScene(void)
           if(cont_escudo==2)
             uso_escudos+=1;
         }
-        else if(saltar){
+        else if(saltar || echado){
           cout<<"esta saltando"<<endl;
         }
         else{
@@ -632,7 +645,7 @@ int main(int argc, char **argv)
     sprites = TextureManager::Inst()->LoadTexture("texturas/penguin.png", GL_BGRA_EXT, GL_RGBA);
     segurity = TextureManager::Inst()->LoadTexture("texturas/escudo.png", GL_BGRA_EXT, GL_RGBA);
     snow = TextureManager::Inst()->LoadTexture("texturas/snow.png", GL_BGRA_EXT, GL_RGBA);
-    
+
     pista = TextureManager::Inst()->LoadTexture("pista.jpg", GL_BGR_EXT, GL_RGB);
     pared = TextureManager::Inst()->LoadTexture("pared.jpeg", GL_BGR_EXT, GL_RGB);
     sky = TextureManager::Inst()->LoadTexture("texturas/montania.jpg", GL_BGR_EXT, GL_RGB);
