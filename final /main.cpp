@@ -26,6 +26,8 @@ float p = -21.0f;	//26-distance of running object
 int num = total - 1;
 float deltaMove = 0;
 int randomn;
+bool salto=false;
+int alto = 0.1;
 
 //-------variables fondo -------------//
 GLint sky;
@@ -35,7 +37,21 @@ GLint wood;
 GLint brick;
 GLint roof;
 GLint grass;
+GLint sprites;
 
+//---------variables de Sprite -----------//
+int times = 0;
+int timebase = 0;
+int anim = 0;
+int i = 0;
+double sprx = 0.08;
+double spry = 0.665;
+double penguin_p_a = 0.5; // parado
+double penguin_p_b = 0.6;
+
+double penguin_e_a = 0.0; // echado
+double penguin_e_b = 0.1;
+bool echado = false; //si apreta echado cambia
 
 //ventana tamaño
 void changeSize(int w, int h)
@@ -59,12 +75,65 @@ void changeSize(int w, int h)
 
 void runner()
 {
-	glColor3f(11.0f, 0.0f, 0.0f);
-	glTranslatef(x, 2.1f, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
+  double p_pos_a = 0, p_pos_b = 0;
+  if(echado){
+    p_pos_a = penguin_e_a; p_pos_b = penguin_e_b;
+    sprx=1;
+  }
+  else{
+    p_pos_a = penguin_p_a; p_pos_b = penguin_p_b;
+    sprx=0.08;
+  }
+
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+	glEnable(GL_BLEND);//utilizar transparencia
+	times = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
+	int dt = times -timebase;// delta time
+	timebase = times;
+	anim += dt;//duracion de la animacion entre dos cambios de Sprite
+	
+	if (anim / 1000.0 > 0.15)// si el tiempo de animacion dura mas 0.15s cambiamos de sprite
+	{
+		i++;
+		anim = 0.0;
+	}
+	
+	if (i == 3) i = 0;
+
+  glPushMatrix();
+  glTranslatef(x, 2.1f+y, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
+  glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, sprites);
+	glBegin(GL_QUADS);
+	glTexCoord2f(sprx*(i + 0), p_pos_a);//arr izq
+	glVertex3f(-0.4, -0.30, 0);
+
+	glTexCoord2f(sprx*(i + 0),p_pos_b); //bajo izq
+	glVertex3f(-0.4, 0.30, 0);
+
+	glTexCoord2f(0.08+sprx*i, p_pos_b); //bajo der
+	glVertex3f(0.4, 0.30, 0);
+
+	glTexCoord2f(0.08+sprx*i, p_pos_a); //arr der
+	glVertex3f(0.4, -0.30, 0);
+	glEnd();
+  glPopMatrix();
+  /*
+  glPushMatrix();
+	GLUquadric* sphere = gluNewQuadric();
+  glEnable(GL_TEXTURE_2D);
+  gluQuadricTexture(sphere, true);
+  glBindTexture(GL_TEXTURE_2D, penguin);
+	glTranslatef(x, 2.1f+y, z + ((total) * dist)- 3.0);	//2.1f- arriba o abajo, 3.0 away from camera
+  gluSphere(sphere,0.1, 50,50);
+  glPopMatrix();
+*/
 	//cout<<z<<" "<<z + ((total) * 30.0)-10.0<<endl;
 	//glRotatef(yRotationAngle*rotspeed, 1.0f, 0.0f, 0.0f);
-	glutWireSphere(0.1f, 20, 20);
+  //glutWireSphere(0.1f, 20, 20);
+  //drawPenguin();
 }
+
 
 void drawSnowMan()
 {
@@ -111,19 +180,27 @@ void drawTree()
       glutSolidSphere(0.60f, 20, 20);
 */
 glPushMatrix();
-//glTranslatef(-8.0f, 0.0f, 8.0f);
-glPushMatrix();
-
+glEnable(GL_TEXTURE_2D);
 GLUquadric* tree = gluNewQuadric();
+gluQuadricTexture (tree, true);
+glBindTexture(GL_TEXTURE_2D, wood);
 glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-
-gluCylinder(tree, 0.5f, 0.5f, 6.0f, 64 ,64);
+//glBindTexture(GL_TEXTURE_2D, wood);
+gluCylinder(tree, 0.5f, 0.2f, 6.0f, 64 ,64);
 glPopMatrix();
+glDisable(GL_TEXTURE_2D);
 
-
+glPushMatrix();
+glEnable(GL_TEXTURE_2D);
+GLUquadric* sphere = gluNewQuadric();
+gluQuadricTexture(sphere, true);
+glBindTexture(GL_TEXTURE_2D, grass);
 glTranslatef(0.0f, 6.4f, 0.0f);
-glutSolidSphere(2.5, 64, 64);
+//glutSolidSphere(2.5, 64, 64);
+gluSphere(sphere,2.5, 50,50);
 glPopMatrix();
+glDisable(GL_TEXTURE_2D);
+
 //glFlush();
 
 }
@@ -134,7 +211,6 @@ void computePos(float deltaMove)
     x += deltaMove * lx * 0.1f;
     z += deltaMove * lz * 0.1f;
 }
-
 
 void drawshadow() // punto negro abajo de snowman
 {
@@ -170,7 +246,7 @@ void renderScene(void)
     deltaMove = 5;
     //cout<<z<<"  "<<p<<"  "<<x<<"  "<<arr[num]<<"   "<<num<<endl;
     if (z < -(((total) * dist) + 20.0)) {
-    	//cout << "Your score:" << score << endl;
+    	cout << "Your score:" << score << endl;
 	    cout << "YOU WON THE GAME" << endl;
 	    exit(0);
     }
@@ -300,25 +376,22 @@ void pressKey(int key, int xx, int yy)
 	       break;
       case GLUT_KEY_RIGHT:
 	       if (x != 2.0f) {
-	       x = x + 10.0f;
+	       x = x + 2.0f;
 	       }
 	       break;
       case GLUT_KEY_UP:
-         if (y != 2.0f) {
-  	     y = y + 20.0f;
-         }
+          y = y + alto;
+         echado = false;
+         cout << "y " << y << endl;
 	       break;
       case GLUT_KEY_DOWN:
-         if (y != 20.0f) {
-           y = y + 20.0f;
-         }
+         echado = true;
          break;
 	break;
     }
 
 
 }
-
 
 int main(int argc, char **argv)
 {
@@ -329,14 +402,15 @@ int main(int argc, char **argv)
     glutInitWindowPosition(250, 50);
     glutInitWindowSize(1000, 700);
     glutCreateWindow("SnowRun");
-
+    //penguin
+    sprites = TextureManager::Inst()->LoadTexture("texturas/penguin.png", GL_BGRA_EXT, GL_RGBA);
     pista = TextureManager::Inst()->LoadTexture("pista.jpg", GL_BGR_EXT, GL_RGB);
     pared = TextureManager::Inst()->LoadTexture("pared.jpeg", GL_BGR_EXT, GL_RGB);
     sky = TextureManager::Inst()->LoadTexture("cielo.jpg", GL_BGR_EXT, GL_RGB);
-    wood = TextureManager::Inst()->LoadTexture("madera.jpg", GL_RGB, GL_RGB);
+    wood = TextureManager::Inst()->LoadTexture("madera.jpg", GL_BGR_EXT, GL_RGB);
     brick = TextureManager::Inst()->LoadTexture("ladrillo.jpg", GL_RGB, GL_RGB);
     roof = TextureManager::Inst()->LoadTexture("techo.jpg", GL_RGB, GL_RGB);
-    grass = TextureManager::Inst()->LoadTexture("pasto.jpg", GL_RGB, GL_RGB);
+    grass = TextureManager::Inst()->LoadTexture("texturas/hojas.jpg", GL_BGR_EXT, GL_RGB);
 
     srand(time(NULL));
 	  randomn = 2;// (rand() % 3) - 1;
